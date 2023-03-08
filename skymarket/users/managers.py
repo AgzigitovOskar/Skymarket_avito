@@ -4,8 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserRoles(models.TextChoices):
-    ADMIN = 'ADM', _('admin')
     USER = 'USR', _('user')
+    ADMIN = 'ADM', _('admin')
 
 
 class UserManager(BaseUserManager):
@@ -13,7 +13,7 @@ class UserManager(BaseUserManager):
     Функция создания пользователя — в нее мы передаем обязательные поля
     """
 
-    def create_user(self, email, first_name, last_name, phone, role=UserRoles.USER, password=None):
+    def create_user(self, email, first_name, last_name, phone, password=None, role=UserRoles.USER):
         if not email:
             raise ValueError('Users must have an email address')
         user = self.model(
@@ -29,7 +29,7 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, email, first_name, last_name, phone, role=UserRoles.ADMIN, password=None):
+    def create_superuser(self, email, first_name, last_name, phone, password=None, role=UserRoles.ADMIN):
         """
         Функция для создания суперпользователя — с ее помощью мы создаем админинстратора
         это можно сделать с помощью команды createsuperuser
