@@ -6,10 +6,10 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class User(AbstractBaseUser):
     first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=150)
     phone = PhoneNumberField()
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=6, choices=UserRoles.choices, default=UserRoles.USER)
+    role = models.CharField(max_length=5, choices=UserRoles.choices, default=UserRoles.USER)
     image = models.ImageField(upload_to="avatars", null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
@@ -32,7 +32,7 @@ class User(AbstractBaseUser):
 
     # эта константа содержит список с полями,
     # которые необходимо заполнить при создании пользователя
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone', "role"]
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone', "role", "image"]
 
     # для корректной работы нам также необходимо
     # переопределить менеджер модели пользователя

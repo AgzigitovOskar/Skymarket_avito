@@ -4,10 +4,10 @@ from ads.models import Ad, Comment
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author_first_name = serializers.ReadOnlyField(source='author.first_name')
-    author_last_name = serializers.ReadOnlyField(source='author.last_name')
-    author_id = serializers.ReadOnlyField(source='author.pk')
-    ad_id = serializers.ReadOnlyField(source='ad.pk')
+    # author_first_name = serializers.ReadOnlyField(source='author.first_name')
+    # author_last_name = serializers.ReadOnlyField(source='author.last_name')
+    # author_id = serializers.ReadOnlyField(source='author.pk')
+    # ad_id = serializers.ReadOnlyField(source='ad.pk')
 
     class Meta:
         model = Comment
@@ -44,4 +44,4 @@ class AdCreateSerializer(serializers.ModelSerializer):
 class CommentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('text',)
+        fields = ('text', )

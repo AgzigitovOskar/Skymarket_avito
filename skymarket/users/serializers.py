@@ -13,3 +13,9 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'first_name', 'last_name', 'phone', 'role', 'image']
+
+
+# class UpdateUserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ['id', 'email', 'first_name', 'last_name', 'phone', 'role', 'image']

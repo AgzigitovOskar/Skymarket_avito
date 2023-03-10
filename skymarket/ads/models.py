@@ -16,7 +16,7 @@ class Ad(models.Model):
     class Meta:
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
-        ordering = ['created_at']
+        ordering = ['-created_at']
 
 
 class Comment(models.Model):
@@ -26,8 +26,12 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.text
 
 
 

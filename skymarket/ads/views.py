@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from ads.filters import AdTitleFilter
+from ads.filters import AdFilter
 from rest_framework import pagination, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -13,13 +13,12 @@ class AdPagination(pagination.PageNumberPagination):
     page_size = 4
 
 
-# TODO view функции. Предлагаем Вам следующую структуру - но Вы всегда можете использовать свою
 class AdViewSet(viewsets.ModelViewSet):
     queryset = Ad.objects.all()
     pagination_class = AdPagination
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = AdTitleFilter
+    filterset_class = AdFilter
 
     def get_serializer_class(self):
         if self.action in ['retrieve']:
