@@ -35,7 +35,7 @@ ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
-# TODO здесь тоже нужно подключить Swagger и corsheaders
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -87,36 +87,26 @@ TEMPLATES = [
 WSGI_APPLICATION = "skymarket.wsgi.application"
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 4,
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
-    ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5,
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"
 }
+
 
 DJOSER = {
-    'HIDE_USERS': False,
-    'PERMISSIONS': {
-
-        'user': ['rest_framework.permissions.AllowAny'],
-        'user_list': ['rest_framework.permissions.AllowAny'],
-
-    },
     'SERIALIZERS': {
-        'user_create': 'users.serializers.UserRegistrationSerializer',
-        'user': 'users.serializers.CurrentUserSerializer',
-        'current_user': 'users.serializers.CurrentUserSerializer',
+        'user': 'users.serializers.UserSerializer',
+        'user_create': 'users.serializers.UserCreateSerializer',
+        'current_user': 'users.serializers.UserSerializer',
     },
     'LOGIN_FIELD': 'email',
-    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
-    'PASSWORD_RESET_CONFIRM_RETYPE': False
-}
 
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+}
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
@@ -184,6 +174,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=5),
     'AUTH_HEADER_TYPES': ('JWT', 'Bearer'),
+    # 'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
 AUTH_USER_MODEL = 'users.User'
@@ -197,3 +188,12 @@ EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.environ.get("EMAIL_PORT")
+
+#
+# SPECTACULAR_SETTINGS = {
+#     'TITLE': 'Your Project API',
+#     'DESCRIPTION': 'Your project description',
+#     'VERSION': '1.0.0',
+#     'SERVE_INCLUDE_SCHEMA': False,
+#     # OTHER SETTINGS
+# }

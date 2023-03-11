@@ -1,16 +1,13 @@
-from django.urls import include, path
-from rest_framework.routers import SimpleRouter
-from rest_framework_nested.routers import NestedSimpleRouter
+from django.urls import path, include
+from rest_framework import routers
+from ads import views
 
-from ads.views import AdViewSet, CommentViewSet
-
-ads_router = SimpleRouter()
-ads_router.register("ads", AdViewSet, basename="ads")
-comment_router = NestedSimpleRouter(ads_router, "ads", lookup="ad")
-comment_router.register("comments", CommentViewSet)
-
+ads_router = routers.SimpleRouter()
+ads_router.register('ads', views.AdvertisementViewSet)
+ads_router.register(r'ads/(?P<ad_pk>[^/.]+)/comments', views.CommentsViewSet)
 
 urlpatterns = [
-    path("", include(ads_router.urls)),
-    path("", include(comment_router.urls)),
+    path('ads/me/', views.AdvertisementsUserOwnerListView.as_view()),
+    path('', include(ads_router.urls)),
 ]
+

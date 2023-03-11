@@ -1,53 +1,91 @@
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from ads.filters import AdFilter
-from rest_framework import pagination, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from ads.models import Ad, Comment
-from ads.permissions import IsOwner
-from ads.serializers import AdSerializer, AdDetailSerializer, CommentSerializer
+from rest_framework.generics import ListAPIView
+from rest_framework import permissions, pagination, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from ads.filters import AdTitleFilter
+from ads.models import Comment
+from ads.permissions import AdOwnerPermission
+from ads.serializers import AdListSerializer, AdRetrieveSerializer, CommentsListSerializer, \
+    CommentCreateSerializer, Ad, AdCreateSerializer, AdUpdateSerializer, CommentUpdateSerializer
 
 
-class AdPagination(pagination.PageNumberPagination):
-    page_size = 4
+class AdvertisementViewSet(viewsets.ModelViewSet):
+    queryset = Ad.objects.select_related('author').all()
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = AdTitleFilter
+    serializer_classes = {
+        'list': AdListSerializer,
+        'retrieve': AdRetrieveSerializer,
+        'create': AdCreateSerializer,
+        'partial_update': AdUpdateSerializer,
+    }
 
+    permission_classes_by_action = {
+        'list': [AllowAny],
+        'retrieve': [IsAuthenticated],
+        'create': [IsAuthenticated],
+        'partial_update': [AdOwnerPermission],
+        'destroy': [AdOwnerPermission],
+    }
 
-class AdViewSet(viewsets.ModelViewSet):
-    queryset = Ad.objects.all()
-    pagination_class = AdPagination
-    permission_classes = [IsAuthenticated]
-    filter_backends = (DjangoFilterBackend,)
-    filterset_class = AdFilter
+    def get_permissions(self):
+        return [permission() for permission in self.permission_classes_by_action[self.action]]
 
     def get_serializer_class(self):
-        if self.action in ['retrieve']:
-            return AdDetailSerializer
-        else:
-            return AdSerializer
+        return self.serializer_classes.get(self.action)
 
-    def det_permissions(self):
-        if self.action in ['update', 'destroy']:
-            self.permission_classes = [IsAuthenticated, IsAdminUser | IsOwner]
-        return super().get_permissions()
-
-    @action(detail=False)
-    def me(self, request, *args, **kwargs):
-        self.queryset = Ad.objects.filter(author=request.user)
-        return super().list(self, request, *args, **kwargs)
+    def create(self, request, *args, **kwargs):
+        request.data['author_id'] = int(self.request.user.id)
+        request.data['ad_id'] = int(self.kwargs['ad_pk'])
+        return super().create(request, *args, **kwargs)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class AdvertisementsUserOwnerListView(ListAPIView):
+    queryset = Ad.objects.all()
+    serializer_class = AdListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        self.queryset = self.queryset.filter(author_id=request.user.id)
+        return super().get(request, *args, **kwargs)
+
+
+class CommentPagination(pagination.PageNumberPagination):
+    def paginate_queryset(self, queryset, request, view=None):
+        self.page_size = len(queryset) or self.page_size
+        return super().paginate_queryset(queryset, request, view)
+
+
+class CommentsViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+    pagination_class = CommentPagination
+
+    default_serializer_class = CommentsListSerializer
+    serializer_classes = {
+        'create': CommentCreateSerializer,
+        'partial_update': CommentUpdateSerializer,
+    }
+
+    permission_classes_by_action = {
+        'list': [IsAuthenticated],
+        'retrieve': [IsAuthenticated],
+        'create': [IsAuthenticated],
+        'partial_update': [AdOwnerPermission],
+        'update': [AdOwnerPermission],
+        'destroy': [AdOwnerPermission],
+    }
+
+    def get_permissions(self):
+        return [permission() for permission in self.permission_classes_by_action[self.action]]
+
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer_class)
 
     def get_queryset(self):
-        ad_id = self.kwargs.get("ad_pk")
-        return Comment.objects.filter(ad_id=ad_id)
+        return self.queryset.filter(ad_id=self.kwargs['ad_pk'])
 
-    def perform_create(self, serializer):
-        ad_id = self.kwargs.get("ad_pk")
-        ad_instance = get_object_or_404(Ad, pk=ad_id)
-        user = self.request.user
-        serializer.save(author=user, ad=ad_instance)
-
+    def create(self, request, *args, **kwargs):
+        request.data['author_id'] = int(self.request.user.id)
+        request.data['ad_id'] = int(self.kwargs['ad_pk'])
+        return super().create(request, *args, **kwargs)

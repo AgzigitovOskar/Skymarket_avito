@@ -1,8 +1,13 @@
 from rest_framework.permissions import BasePermission
 
 
-class IsOwner(BasePermission):
-    message = "You are not owner!"
+class AdOwnerPermission(BasePermission):
+    message = "You are not owner"
 
     def has_object_permission(self, request, view, obj):
-        return obj.author == request.user
+        if request.user.is_anonymous:
+            return False
+        role = request.user.role
+
+        return request.user.id == obj.author.id or role == 'admin'
+
